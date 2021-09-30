@@ -1,10 +1,9 @@
 import urllib.request
-import json
 import re
 from bs4 import BeautifulSoup
 
 
-def getCourse(courseCode):
+def getCourse(courseCode, trimesterCode):
     html = urllib.request.urlopen(
         'https://etudier.uqam.ca/cours?sigle='+courseCode).read()
     soup = BeautifulSoup(html, 'html.parser')
@@ -23,14 +22,21 @@ def getCourse(courseCode):
         periods = getPeriods(gr.findAll('td', {"class": "dates"}))
 
         group = {'noGroupe': noGroupe,
-                  'prof': nomProf,
+                  'teacher': nomProf,
                   'periods': periods,
                   'trimester': getGroupTrimester(trimesters, gr)}
-        groups.append(group)
+        if (trimesterCode == group['trimester']):
+            groups.append(group)
     
     course = {"courseCode":courseCode, "groups":groups}
-    outputJSON = json.dumps(course, ensure_ascii=False, indent=4)
-    return outputJSON
+    return course
+
+def getCourses(courseCodes, trimester):
+    courseCodes = courseCodes.split(',')
+    courses = []
+    for courseCode in courseCodes:
+        courses.append(getCourse(courseCode, trimester))
+    return courses
 
 def getPeriods(htmlSoup):
     periods = []
@@ -45,7 +51,7 @@ def getPeriods(htmlSoup):
         type = elements[4].text
 
         periods.append({'day': day, 'startDate': dates[0], 'endDate': dates[1],
-                        'startTime': times[0], 'endTime': times[1], 'type': type})
+                        'time': times[0]+'-'+times[1], 'type': type})
 
     return periods
 
@@ -64,7 +70,8 @@ def getTrimesters(soup):
 
 
 def getGroupTrimester(trimesters, groupHtml):
+    triDict = { "Été": 'E', "Hiver": 'H', "Automne": 'A' }      
     lineNb = groupHtml.sourceline
     for i in range(len(trimesters)-1, -1, -1):
         if (trimesters[i]["lineNb"] < lineNb):
-            return {"year":trimesters[i]["year"], "season":trimesters[i]["season"]}
+            return triDict[trimesters[i]["season"]] + str(trimesters[i]["year"])[-2:]

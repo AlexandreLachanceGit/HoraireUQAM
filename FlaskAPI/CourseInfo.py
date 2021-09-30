@@ -24,7 +24,8 @@ def getCourse(courseCode, trimesterCode):
         group = {'noGroupe': noGroupe,
                   'teacher': nomProf,
                   'periods': periods,
-                  'trimester': getGroupTrimester(trimesters, gr)}
+                  'trimester': getGroupTrimester(trimesters, gr)
+                  }
         if (trimesterCode == group['trimester']):
             groups.append(group)
     
@@ -39,18 +40,25 @@ def getCourses(courseCodes, trimester):
     return courses
 
 def getPeriods(htmlSoup):
+    datesDict = {"janvier":"01","février":"02","mars":"03","avril":"04",
+                 "mai":"05", "juin":"06","juillet":"07", "août":"08", "septembre":"09",
+                 "octobre":"10","novembre":"11", "décembre":"12"}
     periods = []
 
     for periodHtml in htmlSoup:
         elements = periodHtml.parent.findAll('td')
         day = re.findall('[A-Za-z]{1,}', elements[0].text)[0]
         dates = re.findall('[0-9]{1,2} [a-zûé]{3,} [0-9]{4}', elements[1].text)
-        
+        for i in range(2):
+            dates[i] = dates[i].split(' ')
+            dates[i][1] = datesDict[dates[i][1]]
+            dates[i] = '/'.join(dates[i])
+
         times = re.findall('[0-9]{2}h[0-9]{2}', elements[2].text)
 
         type = elements[4].text
 
-        periods.append({'day': day, 'startDate': dates[0], 'endDate': dates[1],
+        periods.append({'day': day, 'date': dates[0]+'-'+dates[1],
                         'time': times[0]+'-'+times[1], 'type': type})
 
     return periods

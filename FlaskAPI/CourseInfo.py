@@ -58,8 +58,10 @@ def getPeriods(htmlSoup):
 
         type = elements[4].text
 
-        periods.append({'day': day, 'date': dates[0]+'-'+dates[1],
-                        'time': times[0]+'-'+times[1], 'type': type})
+        period = {'day': day, 'date': dates[0]+'-'+dates[1],
+                        'time': times[0]+'-'+times[1], 'type': type}
+        if (len(periods) == 0 or periods[-1]!=period):
+            periods.append(period)
 
     return periods
 

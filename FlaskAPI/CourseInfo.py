@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 
 
 def getCourse(courseCode, trimesterCode):
+    courseCode = courseCode.upper()
+    trimesterCode = trimesterCode.upper()
     html = urllib.request.urlopen(
         'https://etudier.uqam.ca/cours?sigle='+courseCode).read()
     soup = BeautifulSoup(html, 'html.parser')
@@ -11,7 +13,7 @@ def getCourse(courseCode, trimesterCode):
     groupsHtml = soup.findAll('div', {"class": "groupe"})
 
     trimesters = getTrimesters(soup)
-    
+
     groups = []
 
     for gr in groupsHtml:
@@ -22,15 +24,16 @@ def getCourse(courseCode, trimesterCode):
         periods = getPeriods(gr.findAll('td', {"class": "dates"}))
 
         group = {'noGroupe': noGroupe,
-                  'teacher': nomProf,
-                  'periods': periods,
-                  'trimester': getGroupTrimester(trimesters, gr)
-                  }
+                 'teacher': nomProf,
+                 'periods': periods,
+                 'trimester': getGroupTrimester(trimesters, gr)
+                 }
         if (trimesterCode == group['trimester']):
             groups.append(group)
-    
-    course = {"courseCode":courseCode, "groups":groups}
+
+    course = {"courseCode": courseCode, "groups": groups}
     return course
+
 
 def getCourses(courseCodes, trimester):
     courseCodes = courseCodes.split(',')
@@ -39,10 +42,13 @@ def getCourses(courseCodes, trimester):
         courses.append(getCourse(courseCode, trimester))
     return courses
 
+
 def getPeriods(htmlSoup):
-    datesDict = {"janvier":"01","février":"02","mars":"03","avril":"04",
-                 "mai":"05", "juin":"06","juillet":"07", "août":"08", "septembre":"09",
-                 "octobre":"10","novembre":"11", "décembre":"12"}
+    datesDict = {"janvier": "01", "février": "02", "mars": "03", "avril": "04",
+                 "mai": "05", "juin": "06", "juillet": "07", "août": "08",
+                 "septembre": "09", "octobre": "10", "novembre": "11", "décembre": "12"}
+    daysDict = {"Lundi": 0, "Mardi": 1, "Mercredi": 2,
+                "Jeudi": 3, "Vendredi": 4, "Samedi": 5, "Dimanche": 6}
     periods = []
 
     for periodHtml in htmlSoup:
@@ -58,9 +64,9 @@ def getPeriods(htmlSoup):
 
         type = elements[4].text
 
-        period = {'day': day, 'date': dates[0]+'-'+dates[1],
-                        'time': times[0]+'-'+times[1], 'type': type}
-        if (len(periods) == 0 or periods[-1]!=period):
+        period = {'day': daysDict[day], 'date': dates[0]+'-'+dates[1],
+                  'time': times[0]+'-'+times[1], 'type': type}
+        if (len(periods) == 0 or periods[-1] != period):
             periods.append(period)
 
     return periods
@@ -80,7 +86,7 @@ def getTrimesters(soup):
 
 
 def getGroupTrimester(trimesters, groupHtml):
-    triDict = { "Été": 'E', "Hiver": 'H', "Automne": 'A' }      
+    triDict = {"Été": 'E', "Hiver": 'H', "Automne": 'A'}
     lineNb = groupHtml.sourceline
     for i in range(len(trimesters)-1, -1, -1):
         if (trimesters[i]["lineNb"] < lineNb):

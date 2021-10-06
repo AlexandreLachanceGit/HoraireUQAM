@@ -10,6 +10,17 @@ def getCourse(courseCode, trimesterCode):
         'https://etudier.uqam.ca/cours?sigle='+courseCode).read()
     soup = BeautifulSoup(html, 'html.parser')
 
+    title = str(soup.find("title")).split("|")[1].strip()
+    courseInfo = soup.findAll("div", {"class": "rubrique"})
+    objective = courseInfo[0].find('p').text
+    description = courseInfo[1].find('p').text
+    modalities = courseInfo[2].find('p').text
+
+    relatedProgramsSoup = soup.find('div', {"class": "related-programs"}).findAll('a', href=True)
+    relatedPrograms = []
+    for rP in relatedProgramsSoup:
+        relatedPrograms.append(int(rP['href'][-4:])) 
+
     groupsHtml = soup.findAll('div', {"class": "groupe"})
 
     trimesters = getTrimesters(soup)
@@ -31,7 +42,8 @@ def getCourse(courseCode, trimesterCode):
         if (trimesterCode == group['trimester']):
             groups.append(group)
 
-    course = {"courseCode": courseCode, "groups": groups}
+    course = {"courseCode": courseCode, "title": title, "objective": objective,
+              "description": description, "modalities": modalities, "relatedPrograms": relatedPrograms, "groups": groups}
     return course
 
 

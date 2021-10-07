@@ -43,7 +43,6 @@ def getCourse(courseCode, trimesterCode):
     trimesters = getTrimesters(soup)
 
     groups = []
-
     for gr in groupsHtml:
         noGroupe = int(re.findall(
             r'\d+', gr.find('h3', {"class": "no_groupe"}).text)[0])
@@ -77,8 +76,8 @@ def getPeriods(htmlSoup):
     datesDict = {"janvier": "01", "février": "02", "mars": "03", "avril": "04",
                  "mai": "05", "juin": "06", "juillet": "07", "août": "08",
                  "septembre": "09", "octobre": "10", "novembre": "11", "décembre": "12"}
-    daysDict = {"Lundi": 0, "Mardi": 1, "Mercredi": 2,
-                "Jeudi": 3, "Vendredi": 4, "Samedi": 5, "Dimanche": 6}
+    daysDict = {"Lundi": 1, "Mardi": 2, "Mercredi": 3,
+                "Jeudi": 4, "Vendredi": 5, "Samedi": 6, "Dimanche": 7}
     periods = []
 
     for periodHtml in htmlSoup:

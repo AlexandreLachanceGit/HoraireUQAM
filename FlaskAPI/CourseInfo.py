@@ -11,15 +11,34 @@ def getCourse(courseCode, trimesterCode):
     soup = BeautifulSoup(html, 'html.parser')
 
     title = str(soup.find("title")).split("|")[1].strip()
-    courseInfo = soup.findAll("div", {"class": "rubrique"})
-    objective = courseInfo[0].find('p').text
-    description = courseInfo[1].find('p').text
-    modalities = courseInfo[2].find('p').text
 
-    relatedProgramsSoup = soup.find('div', {"class": "related-programs"}).findAll('a', href=True)
+    courseInfo = soup.findAll("div", {"class": "rubrique"})
+
+    objectiveTitles = ["Objectifs"]
+    descriptionTitles = ["Sommaire du contenu", "Description"]
+    modalitiesTitles = ["Modalité d'enseignement"]
+    prerequisitesTitles = ["Préalables académiques"]
+
+    objective = ""
+    description = ""
+    modalities = ""
+    prerequisites = []
+
+    for i in range(len(courseInfo)):
+        if courseInfo[i].find('h2').text in objectiveTitles:
+            objective = courseInfo[i].find('p').text
+        elif courseInfo[i].find('h2').text in descriptionTitles:
+            description = courseInfo[i].find('p').text
+        elif courseInfo[i].find('h2').text in modalitiesTitles:
+            modalities = courseInfo[i].find('p').text
+        elif courseInfo[i].find('h2').text in prerequisitesTitles:
+            prerequisites = re.findall(r'[A-Z]{3}[0-9]{4}', courseInfo[i].find('p').find('ul').text)
+
+    relatedProgramsSoup = soup.find(
+        'div', {"class": "related-programs"}).findAll('a', href=True)
     relatedPrograms = []
     for rP in relatedProgramsSoup:
-        relatedPrograms.append(int(rP['href'][-4:])) 
+        relatedPrograms.append(int(rP['href'][-4:]))
 
     groupsHtml = soup.findAll('div', {"class": "groupe"})
 
@@ -43,7 +62,8 @@ def getCourse(courseCode, trimesterCode):
             groups.append(group)
 
     course = {"courseCode": courseCode, "title": title, "objective": objective,
-              "description": description, "modalities": modalities, "relatedPrograms": relatedPrograms, "groups": groups}
+              "description": description, "modalities": modalities, "prerequisites": prerequisites,
+              "relatedPrograms": relatedPrograms, "groups": groups}
     return course
 
 

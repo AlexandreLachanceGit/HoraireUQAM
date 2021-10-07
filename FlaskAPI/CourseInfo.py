@@ -18,12 +18,7 @@ def getCourse(courseCode, trimesterCode):
     descriptionTitles = ["Sommaire du contenu", "Description"]
     modalitiesTitles = ["Modalité d'enseignement"]
     prerequisitesTitles = ["Préalables académiques"]
-
-    objective = ""
-    description = ""
-    modalities = ""
-    prerequisites = []
-
+    objective, description, modalities, prerequisites = "", "", "", []
     for i in range(len(courseInfo)):
         if courseInfo[i].find('h2').text in objectiveTitles:
             objective = courseInfo[i].find('p').text
@@ -32,7 +27,10 @@ def getCourse(courseCode, trimesterCode):
         elif courseInfo[i].find('h2').text in modalitiesTitles:
             modalities = courseInfo[i].find('p').text
         elif courseInfo[i].find('h2').text in prerequisitesTitles:
-            prerequisites = re.findall(r'[A-Z]{3}[0-9]{4}', courseInfo[i].find('p').find('ul').text)
+            if (courseInfo[i].find('p').find('ul')):
+                prerequisites = re.findall(r'[A-Z]{3}[0-9]{4}', courseInfo[i].find('p').find('ul').text)
+            else:
+                prerequisites = re.findall(r'[A-Z]{3}[0-9]{4}', courseInfo[i].text)
 
     relatedProgramsSoup = soup.find(
         'div', {"class": "related-programs"}).findAll('a', href=True)
@@ -113,7 +111,6 @@ def getTrimesters(soup):
         year = re.findall("[0-9]{4}", trimesterTxt.text)[0]
         trimesters.append({"year": year, "season": season,
                           "lineNb": trimesterTxt.sourceline})
-
     return trimesters
 
 
